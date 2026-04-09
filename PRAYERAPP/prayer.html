@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prayer Times</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="app">
+
+<h2>🕋 Prayer Times</h2>
+
+<!-- LOCATION -->
+<div class="section">
+  <h3>📍 Choose Location</h3>
+
+  <select id="country"></select>
+  <input type="text" id="city" placeholder="Enter city">
+
+  <button onclick="getPrayerTimes()">Load Prayer Times</button>
+</div>
+
+<!-- PRAYER TIMES -->
+<div class="section">
+  <h3>Today</h3>
+
+  <div class="prayer"><span>Fajr</span><span id="fajr">--</span></div>
+  <div class="prayer"><span>Dhuhr</span><span id="dhuhr">--</span></div>
+  <div class="prayer"><span>Asr</span><span id="asr">--</span></div>
+  <div class="prayer"><span>Maghrib</span><span id="maghrib">--</span></div>
+  <div class="prayer"><span>Isha</span><span id="isha">--</span></div>
+
+   <div class="prayer-quote" style="margin: 10px 0; font-style: italic; color: #555; text-align: center;">
+    🙏 Pray before you are prayed Upon🙏
+  </div>
+</div>
+
+<script>
+/* COUNTRY LIST */
+const countrySelect = document.getElementById("country");
+
+const fallbackCountries = [
+  "Afghanistan","Albania","Algeria","Australia","Bangladesh",
+  "Brazil","Canada","China","Egypt","France","Germany",
+  "India","Indonesia","Italy","Japan","Kenya","Malaysia",
+  "Morocco","Nigeria","Pakistan","Qatar","Saudi Arabia",
+  "South Africa","Turkey","UAE","UK","USA"
+];
+
+fetch("https://restcountries.com/v3.1/all")
+.then(res => res.json())
+.then(data => {
+  countrySelect.innerHTML = "";
+
+  data.sort((a,b)=>a.name.common.localeCompare(b.name.common));
+
+  data.forEach(c => {
+    let opt = document.createElement("option");
+    opt.value = c.name.common;
+    opt.textContent = c.name.common;
+    countrySelect.appendChild(opt);
+  });
+})
+.catch(() => {
+  // fallback if API fails
+  fallbackCountries.forEach(c => {
+    let opt = document.createElement("option");
+    opt.value = c;
+    opt.textContent = c;
+    countrySelect.appendChild(opt);
+  });
+});
+
+/* PRAYER TIMES */
+function getPrayerTimes(){
+  const city = document.getElementById("city").value;
+  const country = countrySelect.value;
+
+  if(!city){
+    alert("Enter city");
+    return;
+  }
+
+  fetch(`https://api.aladhan.com/v1/timingsByCity?city=${city}&country=${country}&method=2`)
+  .then(res => res.json())
+  .then(data => {
+    const t = data.data.timings;
+
+    document.getElementById("fajr").textContent = t.Fajr;
+    document.getElementById("dhuhr").textContent = t.Dhuhr;
+    document.getElementById("asr").textContent = t.Asr;
+    document.getElementById("maghrib").textContent = t.Maghrib;
+    document.getElementById("isha").textContent = t.Isha;
+  });
+}
+</script>
+
+</body>
+</html>
